@@ -8,6 +8,8 @@ app.use(express.urlencoded({
     extended: true
 }));
 
+
+app.use(express.static("./public"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/board", require("./routes/board"));
 app.use("/api/task", require("./routes/task"));
