@@ -94,7 +94,7 @@ router.get("/all", (req, res) => {
 
     pool
         .query(`
-    SELECT id, login, name FROM users_olemika`)
+    SELECT * FROM users_olemika`)
         .then(val => {
             console.log(val)
             if (val.rowCount === 0) {

@@ -21,7 +21,8 @@ router.post("/create", parser, (req, res) => {
         .catch(err => {
             console.log(err)
             res.send({
-                error: "Все плохо!"
+                error: `Все плохо! Ошибка: ${err}`,
+                "request": req.body
             })
         })
 });

@@ -209,7 +209,7 @@ router.post("/:id/removeuser", parser, (req, res) => {
         `)
         .then(val => {
             pool.query(`
-            UPDATE tasks_olemika SET user_id = (SELECT creator FROM boards_olemika WHERE id=${req.params.id}) WHERE board_id=${req.params.id} RETURNING *;
+            UPDATE tasks_olemika SET user_id = (SELECT creator FROM boards_olemika WHERE id=${req.params.id}) WHERE board_id=${req.params.id} AND user_id =  ${req.body.id} RETURNING *;
         `).then(val1 => {
                 res.status(200)
                 res.send({
