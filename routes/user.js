@@ -2,95 +2,151 @@ const { request } = require("express");
 const express = require("express");
 const parser = require("body-parser").json();
 const router = express.Router();
-const client = require("./dbconfig");
+// const client = require("./dbconfig");
+const pool = require("./dbconfig");
 
-
-// router.get("/setTable", (req, res) => {
-//     client.query( `
-//     CREATE TABLE users_olemika
-// (
-//     id INT AUTO_INCREMENT PRIMARY KEY,
-//     name VARCHAR(255),
-//     login VARCHAR(20),
-//     password VARCHAR(20)
-// );`
-
-//     );
-//     res.send("Table created")
-// })
 
 router.post("/create", parser, (req, res) => {
-    client.connect();
-    client.query(
-        `
-    CREATE TABLE IF NOT EXISTS users_olemika
-(
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255),
-    login VARCHAR(50),
-    password VARCHAR(50),
-    boards VARCHAR(30) [],
-    tasks INT []
-);` , (err, val) => {
-        if (err) {
-            console.log(err);
-            client.end();
-        }
-        
-    });
+    console.log("request: " + req)
 
-    // client.connect();
-    client.query(
-        `
-            INSERT INTO users_olemika (login, name, password) 
-            VALUES ($1, $2, $3) RETURNING id;
-        `, [req.body.login, req.body.name, req.body.password], (err, val) => {
-            console.log(val);
-            if (val.rows.length) {
+
+    pool.query(`
+    INSERT INTO users_olemika (login, name, password) 
+    VALUES ($1, $2, $3) RETURNING id;
+`, [req.body.login, req.body.name, req.body.password])
+        .then(val => {
+            console.log(val)
+            res.status(200)
+            res.send({
+                "code": res.statusCode,
+                "message": "ok",
+                "user_id": val.rows[0].id
+            })
+        })
+        .catch(err => {
+            if (err.code === '23505') {
+                res.status(403)
                 res.send({
-                    "code": res.statusCode,
-                    "message": "ok"
+                    error: "Такой логин уже существует"
                 })
             }
-            client.end();
-    }
-    );
+        })
 
-    console.log(req.body);
 });
 
 router.post("/auth", parser, (req, res) => {
-    client.connect();
-    client.query(`
-    SELECT * FROM users_olemika WHERE login = $1 AND password = $2`, [req.body.login, req.body.password], (err, val) => {
-        console.log(val.rows[0])
-        
-        if (val && val.rows.length){
-            client.end();
-            res.send({msg: "200"})
-            
-        } else {
-            client.end();
-            res.send({
-                msg: "Все плохо!"
-            })
-        }
-        
-        
-    });
+    pool
+        .query(`
+    SELECT id FROM users_olemika WHERE login = $1 AND password = $2`, [req.body.login, req.body.password])
+        .then(val => {
+            console.log(val)
+            if (val.rowCount === 0) {
+                res.status(404)
+                res.send({
+                    error: "Неправильный логин или пароль",
+                    "message": "Неправильный логин или пароль"
+                })
+                console.log("empty")
+            } else {
+                res.status(200)
+                res.send({
+                    "code": res.statusCode,
+                    "message": "Успешный вход",
+                    "user_id": val.rows[0].id
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500)
+        })
+
 });
 
-router.get("/usr/:id", (req, res) => {
+router.post("/update", parser, (req, res) => {
+    console.log(req.body)
+    pool
+        .query(`
+        UPDATE users_olemika SET name = '${req.body.name}', password = '${req.body.password}' WHERE id = '${req.body.id}' RETURNING *;`)
+        .then(val => {
+            console.log(val)
+            if (val.rowCount === 0) {
+                res.status(404)
+                res.send({
+                    error: "Что-то пошло не так"
+                })
+            } else {
+                res.status(200)
+                res.send({
+                    "user_data": val.rows
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500)
+        })
+
+});
+
+
+router.get("/all", (req, res) => {
+
+    pool
+        .query(`
+    SELECT id, login, name FROM users_olemika`)
+        .then(val => {
+            console.log(val)
+            if (val.rowCount === 0) {
+                res.status(404)
+                res.send({
+                    error: "Пользователи не найдены",
+                })
+            } else {
+                res.status(200)
+                res.send({
+                    "users": val.rows
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500)
+        })
+});
+
+
+router.get("/:id", (req, res) => {
     console.log(req.params.id);
 
-    //select name login from users  where id = id ${req.params.id}
-    client.query();
 
-    let data = {
-        "name": "John",
-        "login": `${req.params.id}`
-    };
-    res.send(data);
-})
+    pool
+        .query(`
+    SELECT id, login, name, password FROM users_olemika WHERE id = $1`, [req.params.id])
+        .then(val => {
+            console.log(val)
+            if (val.rowCount === 0) {
+                res.status(404)
+                res.send({
+                    error: "Пользователь не найден",
+                })
+            } else {
+                res.status(200)
+                res.send({
+                    "login": val.rows[0].login,
+                    "name": val.rows[0].name,
+                    "user_id": val.rows[0].id,
+                    "password": val.rows[0].password
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500)
+        })
+});
+
+
+
 
 module.exports = router;

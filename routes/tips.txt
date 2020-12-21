@@ -1,0 +1,212 @@
+    pool.query(`
+    CREATE TABLE IF NOT EXISTS users_olemika
+(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    login VARCHAR(50),
+    password VARCHAR(50),
+CONSTRAINT login_unique UNIQUE (login) );` ).then(val => console.log("table created or exist").catch(err => console.log(err)));
+
+client.query(
+        `
+    CREATE TABLE IF NOT EXISTS users_olemika
+(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    login VARCHAR(50),
+    password VARCHAR(50),
+    boards VARCHAR(30) [],
+    tasks INT []
+);` , (err, val) => {
+        if (err) {
+            console.log(err);
+            client.end();
+        }
+        
+    });
+
+
+
+ client.query(
+        `
+            INSERT INTO users_olemika (login, name, password) 
+            VALUES ($1, $2, $3) RETURNING id;
+        `, [req.body.login, req.body.name, req.body.password], (err, val) => {
+            if (val && val.rows.length) {
+                res.send({
+                    "code": res.statusCode,
+                    "msg": "ok"
+                })
+            } else { 
+                console.log(err)
+                res.send({
+                "err": err,
+                "msg": "error"
+            })
+        }
+        client.end();
+        client.release(true)
+    });
+
+
+
+    router.post("/create", parser, (req, res) => {
+    client.connect()
+    .then(() => console.log('connected'))
+    .catch(err => console.error('connection error', err.stack));
+    
+    client.query(
+        `
+            INSERT INTO users_olemika (login, name, password) 
+            VALUES ($1, $2, $3) RETURNING id;
+        `, [req.body.login, req.body.name, req.body.password])
+        .then(result => {
+            console.log(result)
+            res.send({
+                "code": res.statusCode,
+                "msg": "ok"
+            })
+        })
+        .catch(e => {
+            console.error(e.stack)
+            res.send({
+                "err": err,
+                "msg": "error"
+            })
+        })
+        .then(() => {
+    client
+        .end()
+        .then(() => console.log('client has disconnected'))
+        .catch(err => console.error('error during disconnection', err.stack))})
+
+});
+
+
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS users_olemika
+(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    login VARCHAR(50),
+    password VARCHAR(50),
+    boards VARCHAR(30) [],
+    tasks INT [],
+CONSTRAINT login_unique UNIQUE (login) );` ).then(val => console.log("table created or exist").catch(err => console.log(err)));
+
+
+
+router.post("/auth", parser, (req, res) => {
+    client.connect();
+    client.query(`
+    SELECT id, boards FROM users_olemika WHERE login = $1 AND password = $2`, [req.body.login, req.body.password], (err, val) => {
+        console.log(val)
+
+        if (val && val.rows.length) {
+            client.end();
+            res.send({ msg: "200" })
+
+        } else {
+            client.end();
+            res.send({
+                msg: "Все плохо!"
+            })
+        }
+        client.end();
+
+    });
+});
+
+
+router.post("/create", parser, (req, res) => {
+    console.log(req.body);
+    client.connect();
+    client.query(
+        `
+            INSERT INTO boards_olemika (name, users) 
+            VALUES ('${req.body.name}', ARRAY [${req.body.id}]);
+        `, (err, val) => {
+            console.log(res);
+            if (err) {
+                console.log(err)
+                res.send({
+                    "code": res.statusCode,
+                    "message": "err"
+                })
+            } else {
+                console.log(val)
+                res.send({
+                    "code": res.statusCode,
+                    "message": "ok"
+                })
+            }
+            client.end();
+    }
+    );
+});
+
+
+ pool.query( `
+    CREATE TABLE IF NOT EXISTS boards_olemika
+(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    creator INT
+);`  ).then(val => console.log("table created or already exist").catch(err => console.log(err)));
+
+
+pool.query( `
+    CREATE TABLE IF NOT EXISTS boardUsers_olemika
+(
+    id SERIAL PRIMARY KEY,
+    board_id INT,
+    user_id INT
+);`  ).then(val => console.log("table created or already exist").catch(err => console.log(err)));
+
+
+    pool
+        .query(`
+            SELECT board.name, board.id, task.id, task.name, task.description, task.date_to, task.status, task.user_id, tag.name FROM boards_olemika board
+            LEFT OUTER JOIN tasks_olemika task  ON task.board_id = board.id
+            LEFT OUTER JOIN tags_olemika tag ON  tag.board_id = board.id
+            LEFT OUTER JOIN tasktags_olemika tt ON tt.task_id = tag.id
+            WHERE board.id = $1`, [req.params.id])
+        .then(val => {
+            console.log(val)
+            if (val.rowCount === 0) {
+                res.status(404)
+                res.send({
+                    error: "Борды не найдены",
+                })
+            } else {
+                res.status(200)
+                res.send({
+                    "board_id": req.params.id,
+                    "message" : val.rows
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500)
+        })
+});
+
+
+
+SELECT board.name as board_name, board.id as board_id, task.id as task_id, task.name as task_name, task.description as task_description, task.date_to as task_date_to, task.status as task_status, task.user_id as task_user_id, tag.name as tag_name, tag.id as tag_id FROM boards_olemika board
+            LEFT OUTER JOIN tasks_olemika task  ON task.board_id = board.id
+            LEFT OUTER JOIN tags_olemika tag ON  tag.board_id = board.id
+            LEFT OUTER JOIN tasktags_olemika tt ON tt.task_id = tag.id
+            WHERE board.id = 1
+
+
+
+            {"board_data":[{"board_name":"new dashboards","board_id":1,"task_id":null,"task_name":null,"task_description":null,"task_date_to":null,"task_status":null,"task_user_id":null,"tag_name":null,"tag_id":null}],"statuses":[{"id":1,"name":"Task Ready"},{"id":2,"name":"On Progress"},{"id":3,"name":"Needs Review"},{"id":4,"name":"Done"}]}
+
+
+            ALTER TABLE child_table_name 
+  ADD CONSTRAINT fk_name 
+  FOREIGN KEY (child_column_name) 
+  REFERENCES parent_table_name(parent_column_name) 
+  ON DELETE CASCADE;

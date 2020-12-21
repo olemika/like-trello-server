@@ -1,0 +1,52 @@
+{
+    "tasks": [
+        {
+            "board_id": 3,
+            "task_id": 3,
+            "task_name": "s",
+            "task_description": "asasasasas",
+            "task_date_to": "2020-12-01T21:00:00.000Z",
+            "task_status": 2,
+            "task_user_id": 2,
+            "tag": null
+        },
+        {
+            "board_id": 3,
+            "task_id": 4,
+            "task_name": "Имя",
+            "task_description": "Описание",
+            "task_date_to": "2020-12-22T21:00:00.000Z",
+            "task_status": 2,
+            "task_user_id": 2,
+            "tag": null
+        },
+        {
+            "board_id": 3,
+            "task_id": 9,
+            "task_name": "new task",
+            "task_description": "ddescription",
+            "task_date_to": "2021-01-02T21:00:00.000Z",
+            "task_status": 1,
+            "task_user_id": 30,
+            "tag": "Tagname"
+        }
+    ],
+    "statuses": [
+        {
+            "id": 1,
+            "name": "Task Ready"
+        },
+        {
+            "id": 2,
+            "name": "On Progress"
+        },
+        {
+            "id": 3,
+            "name": "Needs Review"
+        },
+        {
+            "id": 4,
+            "name": "Done"
+        }
+    ]
+}

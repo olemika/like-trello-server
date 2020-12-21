@@ -2,10 +2,143 @@
 <html lang="en">
 <head> 
     <meta charset="UTF-8">
-    <title>Войти</title>
+    <title>Страница юзера</title>
 </head>
 <body>
-    <h1>Войти</h1>
+    <h1>Профиль</h1>
+    <div>
+        <p id='name'>Имя: </p>
+        <p id='pass'>Имя: </p>
+        <p id='login'>Имя: </p>
+        <form action="http://localhost:4000/api/board/create" method="POST" enctype="application/json">
+            <input type="text" name="name" placeholder="name"/>
+            <input type="id" name="id" placeholder="id"/>
+            <input type="submit" value="Создать дашборд"/>
+        </form>
+        <button id="getboards">Получить борды</button>
+        <button id="getboardid">Получить конкретный борд</button>
+        <button id="getallusers">Получить список юзеров</button>
+        <form action="http://localhost:4000/api/user/31/update" method="POST" enctype="application/json">
+            <input type="text" name="name" placeholder="name"/>
+            <input type="id" name="password" placeholder="password"/>
+            <input type="submit" value="Изменить юзера 31"/>
+        </form>
+
+        <form action="http://localhost:4000/api/board/21/update" method="POST" enctype="application/json">
+            <input type="text" name="name" placeholder="name"/>
+            <input type="submit" value="Изменить борд 21"/>
+        </form>
+
+        <button id="getusersofboard">Получить юзеров борда</button>
+
+        <form action="http://localhost:4000/api/board/13/adduser" method="POST" enctype="application/json">
+            <input type="id" name="id" placeholder="id"/>
+            <input type="submit" value="Добавить юзера к борду"/>
+        </form>
+
+        <form action="http://localhost:4000/api/board/19/removeuser" method="POST" enctype="application/json">
+            <input type="id" name="id" placeholder="id"/>
+            <input type="submit" value="Удалить юзера из борда"/>
+        </form>
+
+        <form action="http://localhost:4000/api/board/delete" method="POST" enctype="application/json">
+            <input type="id" name="id" placeholder="id"/>
+            <input type="submit" value="Удалить борд"/>
+        </form>
+      
+        <form action="http://localhost:4000/api/task/create" method="POST" enctype="application/json">
+            <input type="text" name="name" placeholder="name"/>
+            <input type="text" name="description" placeholder="description"/>
+            <input type="date" name="date_to" placeholder="date_to"/>
+            <input type="id" name="status" placeholder="status"/>
+            <input type="id" name="user_id" placeholder="user_id"/>
+            <input type="id" name="board_id" placeholder="board_id"/>
+            <input type="text" name="tag" placeholder="tag"/>
+            <input type="submit" value="Создать таск"/>
+        </form>
+
+
+        <form action="http://localhost:4000/api/task/setstatus" method="POST" enctype="application/json">
+            <input type="id" name="status" placeholder="status"/>
+            <input type="id" name="id" placeholder="id"/>
+            <input type="submit" value="Изменить статус таска"/>
+        </form>
+
+        <form action="http://localhost:4000/api/task/update" method="POST" enctype="application/json">
+            <input type="id" name="id" placeholder="id"/>
+            <input type="text" name="name" placeholder="name"/>
+            <input type="text" name="description" placeholder="description"/>
+            <input type="date" name="date_to" placeholder="date_to"/>
+            <input type="id" name="status" placeholder="status"/>
+            <input type="id" name="user_id" placeholder="user_id"/>
+            <input type="text" name="tag" placeholder="tag"/>
+            <input type="submit" value="Изменить таск"/>
+        </form>
+
+        <form action="http://localhost:4000/api/task/delete" method="POST" enctype="application/json">
+            <input type="id" name="id" placeholder="id"/>
+            <input type="submit" value="Удалить таск"/>
+        </form>
+
+
+    </div>
+    <script>
+        let form = document.forms[0];
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            sendForm({
+                id: form.id.value,
+                name: form.name.value,
+            });
+        });
+
+        async function sendForm(body) {
+            let res = await fetch (form.action, {
+                method: "POST",
+                headers: {
+                "content-type" : "application/json",
+                "accept" : "application/json"
+                },
+                body: JSON.stringify(body)
+            })
+            let data = await res.json();
+            console.log(data);
+            if (data.msg === 200) {
+                console.log("ok")
+            }
+        }
+        document.querySelector("#getboards").addEventListener('click', function(){
+            console.log('click')
+            fetch('http://localhost:4000/api/board/all/31')
+        })
+
+       
+
+        document.querySelector("#getusersofboard").addEventListener('click', function(){
+            console.log('click')
+            fetch('http://localhost:4000/api/board/19/users')
+        })
+
+        document.querySelector("#getboardid").addEventListener('click', function(){
+            console.log('click')
+            fetch('http://localhost:4000/api/board/3')
+        })
+        document.querySelector("#getallusers").addEventListener('click', function(){
+            console.log('click')
+            fetch('http://localhost:4000/api/user/all')
+        })
+
+        document.addEventListener('DOMContentLoaded', function(){
+            fetch('http://localhost:4000/api/user/2').then(res=>{
+                res.json().then((res)=>{
+                    document.querySelector("#name").innerText=`Имя: ${res.name}`
+                    document.querySelector("#login").innerText=`Логин: ${res.login}`
+                    console.log(res)
+                })
+            
+            })
+        })
+    </script>
     
 </body>
 </html>
