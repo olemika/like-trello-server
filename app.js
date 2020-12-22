@@ -1,5 +1,5 @@
 const express = require("express");
-const port =  process.env.PORT || 4000;
+const port =  process.env.PORT || 5050;
 const parser = require("body-parser").json();
 const app = express();
 const cors = require("cors");

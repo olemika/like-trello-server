@@ -5,15 +5,18 @@ const pool = require("./dbconfig");
 
 //создать таск
 router.post("/create", parser, (req, res) => {
-    console.log(`request body = ${req.body}`);
+    console.log(`request body = ${req.body.date_to}`);
     pool.query(`
     INSERT INTO tasks_olemika (name, description, date_to, status, user_id, board_id, tag) 
     VALUES ('${req.body.name}', '${req.body.description}', '${req.body.date_to}', ${req.body.status}, ${req.body.user_id}, ${req.body.board_id}, '${req.body.tag}') RETURNING *;
 `)
         .then(val => {
-            console.log(val)
+            console.log("date from db " + val.rows[0].date_to)
             res.status(200)
+            let normDate = new Date(val.rows[0].date_to.toLocaleDateString())
+            
             res.send({
+                "date (tostring): ": normDate.format("yyyy-mm-dd"),
                 "newtask": val.rows,
                 "message": "Таск создан",
             })

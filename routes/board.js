@@ -6,7 +6,7 @@ const pool = require("./dbconfig");
 
 //Получить все борды по юзер_айди
 router.get("/all/:id", parser, (req, res) => {
-    console.log("Получаем борды")
+    console.log("Получаем борды " + req.params)
     pool
         .query(`
             SELECT b.name, b.id FROM boardUsers_olemika bu
